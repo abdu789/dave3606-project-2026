@@ -1,3 +1,4 @@
+
 import psycopg
 
 conn = psycopg.connect(
@@ -9,37 +10,49 @@ conn = psycopg.connect(
 )
 
 cur = conn.cursor()
-cur.execute(
-    """
-    create table lego_set(
-        id text not null,
-        name text not null,
-        year int null,
-        category text null,
-        preview_image_url text null
-    );
-    """
-)
-cur.execute(
-    """
-    create table lego_brick(
-        brick_type_id text not null,
-        color_id int not null,
-        name text not null,
-        preview_image_url text null
-    );
-    """
-)
-cur.execute(
-    """
-    create table lego_inventory(
-        set_id text not null,
-        brick_type_id text not null,
-        color_id int not null,
-        count int not null
-    );
-    """
-)
+
+# Table: lego_set
+cur.execute("""
+CREATE TABLE lego_set(
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    year INT,
+    category TEXT,
+    preview_image_url TEXT
+);
+""")
+
+# Table: lego_brick
+cur.execute("""
+CREATE TABLE lego_brick(
+    brick_type_id TEXT NOT NULL,
+    color_id INT NOT NULL,
+    name TEXT NOT NULL,
+    preview_image_url TEXT,
+    PRIMARY KEY (brick_type_id, color_id)
+);
+""")
+
+# Table: lego_inventory
+cur.execute("""
+CREATE TABLE lego_inventory(
+    set_id TEXT NOT NULL,
+    brick_type_id TEXT NOT NULL,
+    color_id INT NOT NULL,
+    count INT NOT NULL,
+    PRIMARY KEY (set_id, brick_type_id, color_id),
+    FOREIGN KEY (set_id) REFERENCES lego_set(id),
+    FOREIGN KEY (brick_type_id, color_id)
+        REFERENCES lego_brick(brick_type_id, color_id)
+);
+""")
+
 cur.close()
 conn.commit()
 conn.close()
+
+
+    
+
+        
+
