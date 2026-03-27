@@ -1,45 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lego set</title>
-        <style>
-            body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
-            table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-            th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; }
-            th { font-weight: 600; }
-            #error { color: red; }
-        </style>
-    </head>
-    <body>
-        <h1>Lego set</h1>
-        <div id="error"></div>
-        <p><strong>Set id:</strong> <span id="setId"></span></p>
-        <p><strong>Set name:</strong> <span id="setName"></span></p>
-        <table>
-            <thead><tr><th>Image</th><th>Brick type</th><th>Color</th><th>Count</th></tr></thead>
-            <tbody id="inventory"></tbody>
-        </table>
-        <script>
-            const urlParameters = new URLSearchParams(document.location.search);
-            const setId = urlParameters.get("id");
-            fetch(`/api/set?id=${setId}`)
-                .then(function(setData) { return setData.json(); })
-                .then(function(setJson) {
-                    const inventoryTable = document.getElementById("inventory");
-                    const inventoryRow = document.createElement("tr");
-                    inventoryRow.innerHTML = (
-                        "<td>Example row</td>" +
-                        "<td>to show how to</td>" +
-                        "<td>dynamically construct HTML</td>" +
-                        "<td>in JavaScript</td>"
-                    )
-                    inventoryTable.appendChild(inventoryRow);
-                })
-                .catch(function(err) {
-                    document.getElementById("error").textContent = "Failed to load data: " + err;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lego set</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; }
+        th { font-weight: 600; }
+        #error { color: red; }
+        img { width: 50px; height: 50px; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <h1>Lego set</h1>
+    <div id="error"></div>
+    <p><strong>Set id:</strong> <span id="setId"></span></p>
+    <p><strong>Set name:</strong> <span id="setName"></span></p>
+    <table>
+        <thead>
+            <tr><th>Image</th><th>Brick type</th><th>Color</th><th>Count</th></tr>
+        </thead>
+        <tbody id="inventory"></tbody>
+    </table>
+
+    <script>
+        const urlParameters = new URLSearchParams(document.location.search);
+        const setId = urlParameters.get("id");
+
+        fetch(`/api/set?id=${setId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("error").textContent = data.error;
+                    return;
+                }
+
+                document.getElementById("setId").textContent = data.id;
+                document.getElementById("setName").textContent = data.name;
+
+                const inventoryTable = document.getElementById("inventory");
+                data.inventory.forEach(item => {
+                    const tr = document.createElement("tr");
+
+                    // Optional: Add an image if you have one for brick type/color
+                    const imgTd = `<td><img src="/static/images/${item.brick_type_id}_${item.color_id}.png" alt="brick"></td>`;
+
+                    tr.innerHTML = (
+                        imgTd +
+                        `<td>${item.brick_type_id}</td>` +
+                        `<td>${item.color_id}</td>` +
+                        `<td>${item.count}</td>`
+                    );
+                    inventoryTable.appendChild(tr);
                 });
-        </script>
-    </body>
+            })
+            .catch(err => {
+                document.getElementById("error").textContent = "Failed to load data: " + err;
+            });
+    </script>
+</body>
 </html>
